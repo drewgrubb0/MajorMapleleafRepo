@@ -1,0 +1,2 @@
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://Drew:mapleleaf@nuber-shard-00-00-bgask.mongodb.net:27017,nuber-shard-00-01-bgask.mongodb.net:27017,nuber-shard-00-02-bgask.mongodb.net:27017/test?ssl=true&replicaSet=NUber-shard-0&authSource=admin');
