@@ -6,4 +6,6 @@ router.use(bodyParser.json());
 
 var Customer = require('./Customer');
 
+//commands here
+
 module.exports = router;
