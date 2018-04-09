@@ -1,9 +1,9 @@
 var mongoose = require('mongoose');
 var DriverSchema = new mongoose.Schema({
-    id: String,
+    id: Number,
     availability: Boolean,
     name: String,
-    currentCustomer: String,
+    currentCustomer: Number,
     currentAddress: String
 });
 mongoose.model('Driver', DriverSchema);
