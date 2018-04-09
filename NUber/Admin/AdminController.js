@@ -9,9 +9,10 @@ var Driver = require('../Driver/Driver');
 router.post('/', function(req, res) {
     Driver.create({
         id: req.body.id,
-        availability: req.body.availability,
+        availability: 0,
+        car: req.body.car,
         name: req.body.name,
-        currentCustomer: req.body.currentCustomer,
+        currentCustomer: 0,
         currentAddress: req.body.currentAddress
     },
     function(err, driver) {

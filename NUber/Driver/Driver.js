@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var DriverSchema = new mongoose.Schema({
     id: Number,
+    car: String,
     availability: Boolean,
     name: String,
     currentCustomer: Number,
