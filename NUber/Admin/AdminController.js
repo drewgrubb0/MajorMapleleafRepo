@@ -4,9 +4,7 @@ var bodyParser = require('body-parser');
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-//////////Needs to be set to require Driver correctly before it can work
 var Driver = require('../Driver/Driver');
-//////////Needs to be set to require Driver correctly before it can work
 
 router.post('/', function(req, res) {
     Driver.create({
