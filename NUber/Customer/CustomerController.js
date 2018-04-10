@@ -23,7 +23,7 @@ router.get('/', function (req, res) {
         var custAddress = req.rawHeaders[5];
         custAddress = custAddress.split(' ').join('+');
         var key = "&key=AIzaSyCL-_lJA8fRyWYnYs-4jq3rBpZweaWvQ-U";
-        var url = urlBeg + driverAdd + "&destindiations=" + custAddress + key;
+        var url = urlBeg + driverAdd + "&destinations=" + custAddress + key;
 
         const https = require("https");
         https.get(url, ress => {
