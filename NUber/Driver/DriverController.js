@@ -27,7 +27,7 @@ router.put('/:id', function (req, res) {
     
     Driver.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, user) {
         if (err) return res.status(500).send("You must either be set as available or unavailable.");
-        res.status(200).send(Driver);
+        res.status(200).send(user);
     });
 });
 
