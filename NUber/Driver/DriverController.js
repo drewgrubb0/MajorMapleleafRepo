@@ -10,9 +10,8 @@ var Driver = require('./Driver');
 // might not need this since admin makes it. Just adding it
 router.post('/', function (req, res) {
     Driver.create({
-            id: req.body.id,
-            availability: 0,
             car: req.body.car,
+            availability: 0,
             name: req.body.name,
             currentCustomer: 0,
             currentAddress: req.body.currentAddress
@@ -25,12 +24,10 @@ router.post('/', function (req, res) {
 
 router.put('/:id', function (req, res) {
     
-    Driver.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, user) {
+    Driver.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, driver) {
         if (err) return res.status(500).send("You must either be set as available or unavailable.");
-        res.status(200).send(user);
+        res.status(200).send(driver);
     });
 });
-
-
 
 module.exports = router;
