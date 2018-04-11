@@ -3,7 +3,7 @@ var DriverSchema = new mongoose.Schema({
     car: String,
     availability: Boolean,
     name: String,
-    currentCustomer: Number,
+    currentCustomer: String,
     currentAddress: String
 });
 mongoose.model('Driver', DriverSchema);
