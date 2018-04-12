@@ -12,7 +12,7 @@ router.post('/', function(req, res) {
         availability: 0,
         name: req.body.name,
         currentCustomer: 0,
-        currentCoords: req.body.currentCoords.replace(/\s+/g, '')
+        currentCoords: req.body.currentCoords.replace(/\s+/g, '+')
     },
     function(err, driver) {
             if(err)

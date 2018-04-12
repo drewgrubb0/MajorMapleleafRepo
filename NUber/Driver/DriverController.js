@@ -14,7 +14,7 @@ router.post('/', function (req, res) {
             availability: 0,
             name: req.body.name,
             currentCustomer: 0,
-            currentCoords: req.body.currentCoords.replace(/\s+/g, '')
+            currentCoords: req.body.currentCoords.replace(/\s+/g, '+')
         }, 
         function (err, user) {
             if (err) return res.status(500).send("There was a problem adding the information to the database.");
