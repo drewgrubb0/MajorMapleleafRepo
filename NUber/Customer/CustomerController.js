@@ -14,7 +14,7 @@ router.get('/', function (req, res) {
         var driverAdd = "";
 
         for(var i = 0; i < drivers.length; i++) {
-            driverAdd += drivers[i].currentAddress;
+            driverAdd += drivers[i].currentCoords;
             if(i + 1 != drivers.length)
                 driverAdd += "|";
         }
