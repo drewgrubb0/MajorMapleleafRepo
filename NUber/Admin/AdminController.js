@@ -7,25 +7,29 @@ router.use(bodyParser.json());
 var Driver = require('../Driver/Driver');
 
 router.post('/', function(req, res) {
-    Driver.create({
-        car: req.body.car,
-        availability: 0,
-        name: req.body.name,
-        currentCustomer: 0,
-        currentCoords: req.body.currentCoords.replace(/\s+/g, '+')
-    },
-    function(err, driver) {
-            if(err)
-                return res.status(500).send("There was a problem adding a driver to the database");
-            res.status(200).send(driver);
-    });
+    if(req.body.car && req.body.name && req.body.currentCoords) {
+        Driver.create({
+                car: req.body.car,
+                availability: 0,
+                name: req.body.name,
+                currentCustomer: 0,
+                currentCoords: req.body.currentCoords.replace(/\s+/g, '+')
+            },
+            function (err, driver) {
+                if (err)
+                    return res.status(500).send("There was a problem adding a driver to the database");
+                res.status(200).send(driver);
+            });
+    } else {
+        res.status(500).send("Must input name, car, and currentCoords into body.");
+    }
 });
 
 router.delete('/:id', function(req, res){
     Driver.findByIdAndRemove(req.params.id, function(err, driver) {
         if(err)
             return res.status(500).send("There was a problem deleting the driver");
-        return res.status(200).send("Driver" + driver.name + " was deleted");
+        return res.status(200).send("Driver " + driver.name + " was deleted");
     });
 });
 

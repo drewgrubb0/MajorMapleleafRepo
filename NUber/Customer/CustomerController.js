@@ -56,4 +56,45 @@ router.get('/', function (req, res) {
     });
 });
 
+router.post('/', function (req, res) {
+    if(req.body.driverID && req.body.address && req.body.name) {
+        Driver.findById(req.body.driverID, function (err, driver) { //checks to make sure driver exists and is available
+            if(err) return res.status(404).send("There was a problem finding the selected driver.");
+            if(driver.availability != true) return res.status(400).send("Selected driver is no longer available");
+        });
+
+        Customer.create({ //creates new customer in database
+                name: req.body.name,
+                address: req.body.address,
+                driverID: req.body.driverID
+            },
+            function (err, user) {
+                if (err) return res.status(500).send("There was a problem adding the information to the database.");
+                Driver.findByIdAndUpdate(req.body.driverID, {availability: false, currentCustomer: user._id}, {new: true}, function (err) { //updates driver
+                    if (err) return res.status(500).send("There was a problem updating the selected driver in the database.");
+                    res.status(200).send(user);
+                });
+            });
+
+    } else {
+        res.status(400).send("Must input name, address, and driverID into body.");
+    }
+});
+
+router.get('/all', function(req, res){ //used for debugging, shows all customers in database
+    Customer.find({}, function(err, user) {
+        if(err)
+            return res.status(500).send("There was a problem finding customers");
+        return res.status(200).send(user);
+    });
+});
+
+router.delete('/:id', function(req, res){ //used to delete customers, should be edited for customer cancellations
+    Customer.findByIdAndRemove(req.params.id, function(err, user) {
+        if(err)
+            return res.status(500).send("There was a problem deleting the customer");
+        return res.status(200).send("Driver " + user.name + " was deleted");
+    });
+});
+
 module.exports = router;
