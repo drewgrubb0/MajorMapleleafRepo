@@ -7,7 +7,6 @@ router.use(bodyParser.json());
 var Driver = require('./Driver');
 var Customer = require('../Customer/Customer');
 
-//commands here
 router.get('/:id', function (req, res) {
     Driver.findById(req.params.id, function(err, driver) {
         if(err)
@@ -23,22 +22,6 @@ router.get('/:id', function (req, res) {
             return res.status(200).send(customer);
         });
     });
-});
-// might not need this since admin makes it. Just adding it
-router.post('/', function (req, res) {
-    if(req.body.car && req.body.name && req.body.currentCoords) {
-        Driver.create({
-                car: req.body.car,
-                availability: 0,
-                name: req.body.name,
-                currentCustomer: 0,
-                currentCoords: req.body.currentCoords.replace(/\s+/g, '+')
-            },
-            function (err, user) {
-                if (err) return res.status(500).send("There was a problem adding the information to the database.");
-                res.status(200).send(user);
-            });
-    }
 });
 
 router.put('/:id', function (req, res) {
