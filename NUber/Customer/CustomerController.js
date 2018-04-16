@@ -89,10 +89,18 @@ router.get('/', function (req, res) {
 });
 
 router.post('/', function (req, res) {
+    var hasSentError = false;
     if(req.body.driverID && req.body.address && req.body.name) {
         Driver.findById(req.body.driverID, function (err, driver) { //checks to make sure driver exists and is available
-            if(err) return res.status(404).send("There was a problem finding the selected driver.");
-            if(driver.availability != true) return res.status(400).send("Selected driver is no longer available");
+            if(err) {
+                hasSentError = true;
+                return res.status(404).send("There was a problem finding the selected driver.");
+            }
+
+            if(driver.availability != true) {
+                hasSentError = true;
+                return res.status(400).send("Selected driver is no longer available");
+            }
         });
 
         Customer.create({ //creates new customer in database
@@ -101,10 +109,18 @@ router.post('/', function (req, res) {
                 driverID: req.body.driverID
             },
             function (err, user) {
-                if (err) return res.status(500).send("There was a problem adding the information to the database.");
-                Driver.findByIdAndUpdate(req.body.driverID, {availability: false, currentCustomer: user._id}, {new: true}, function (err) { //updates driver
-                    if (err) return res.status(500).send("There was a problem updating the selected driver in the database.");
-                    res.status(200).send(user);
+                if (err) {
+                    hasSentError = true;
+                    return res.status(500).send("There was a problem adding the information to the database.");
+                }
+                else
+                    Driver.findByIdAndUpdate(req.body.driverID, {availability: false, currentCustomer: user._id}, {new: true}, function (err) { //updates driver
+                        if (err && hasSentError == false) {
+                            hasSentError = true;
+                            return res.status(501).send("There was a problem updating the selected driver in the database.");
+                        }
+                        if(hasSentError == false)
+                            res.status(200).send(user);
                 });
             });
 
