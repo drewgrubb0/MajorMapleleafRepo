@@ -7,6 +7,38 @@ router.use(bodyParser.json());
 var Customer = require('./Customer');
 var Driver = require('../Driver/Driver');
 
+router.get('/:id', function(req, res){
+    Customer.findById(req.params.id, function(err, user) {
+        if(err) return res.status(500).send("There was a problem finding the customer");
+        if(user == null) return res.status(404).send("Customer with given id does not exist");
+
+        if(user.driverID == 0) return res.status(404).send("Customer does not have  assigned driver");
+        Driver.findById(user.driverID, function (err, driver) {
+            if(err) return res.status(404).send("There was a problem finding the selected driver.");
+            if(driver == null) return res.status(404).send("Driver with given id does not exist");
+
+            var urlBeg = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=";
+            var custAddress = driver.currentCoords.split(' ').join('+');;
+            var driverAdd = user.address.split(' ').join('+');;
+            var key = "&key=AIzaSyCL-_lJA8fRyWYnYs-4jq3rBpZweaWvQ-U";
+            var url = urlBeg + driverAdd + "&destinations=" + custAddress + key;
+
+            const https = require("https");
+            https.get(url, ress => {
+                ress.setEncoding("utf8");
+                let body = "";
+                ress.on("data", data => {
+                    body += data;
+                });
+                ress.on("end", () => {
+                    body = JSON.parse(body);
+                    return res.status(200).send(body.rows[0].elements[0].duration);
+                });
+            });
+        });
+    });
+});
+
 router.get('/', function (req, res) {
     Driver.find({}, function (err, drivers) {
         if (err) return res.status(500).send("There was a problem finding the drivers.");
