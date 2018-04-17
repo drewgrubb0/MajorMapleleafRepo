@@ -106,7 +106,8 @@ router.post('/', function (req, res) {
         Customer.create({ //creates new customer in database
                 name: req.body.name,
                 address: req.body.address,
-                driverID: req.body.driverID
+                driverID: req.body.driverID,
+                canReview: false
             },
             function (err, user) {
                 if (err) {
@@ -137,11 +138,25 @@ router.get('/all', function(req, res){ //used for debugging, shows all customers
     });
 });
 
-router.delete('/:id', function(req, res){ //used to delete customers, should be edited for customer cancellations
+router.put('/cancel/:id', function(req, res){
+    Customer.findByIdAndUpdate(req.params.id, {canReview: true}, function(err, customer) {
+        if(err)
+            return res.status(500).send("There was a problem cancelling your ride :(");
+
+        Driver.findByIdAndUpdate(customer.driverID, {availability: false, currentCustomer: "0"}, function (err, driver) {
+            if(err)
+                return res.status(500).send("There was a problem updating your driver's availability...");
+        })
+
+        return res.status(200).send("Thank you for using NUber! Be sure to rate your driver!");
+    });
+});
+
+router.delete('/:id', function(req, res){
     Customer.findByIdAndRemove(req.params.id, function(err, user) {
         if(err)
             return res.status(500).send("There was a problem deleting the customer");
-        return res.status(200).send("Driver " + user.name + " was deleted");
+        return res.status(200).send("Customer " + user.name + " was deleted");
     });
 });
 
