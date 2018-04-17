@@ -24,11 +24,26 @@ router.get('/:id', function (req, res) {
     });
 });
 
-router.put('/:id', function (req, res) {
+router.put('/:id', function (req, res){
     
     Driver.findByIdAndUpdate(req.params.id, {availability: req.body.availability}, {new: true}, function (err, driver) {
         if (err) return res.status(500).send("You must either be set as available(true) or unavailable(false).");
         res.status(200).send(driver);
+    });
+});
+
+router.put('/cancel/:id', function(req, res){
+    Driver.findByIdAndUpdate(req.params.id, {availability: false, currentCustomer: "0"}, {new: false}, function(err, driver){
+        if(err)
+            return res.status(500).send("There was a problem cancelling your drive");
+
+        Customer.findByIdAndUpdate(driver.currentCustomer, {canReview: true}, {new: true}, function(err, customer){
+           if(err)
+               return res.status(500).send("No ride assigned to cancel");
+           else
+               return res.status(200).send("Your drive has been cancelled!");
+        });
+
     });
 });
 
