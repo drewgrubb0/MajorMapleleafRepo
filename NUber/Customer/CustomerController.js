@@ -26,15 +26,15 @@ router.get('/:id', function(req, res){
             const https = require("https");
             https.get(url, ress => {
                 ress.setEncoding("utf8");
-                let body = "";
-                ress.on("data", data => {
-                    body += data;
-                });
-                ress.on("end", () => {
-                    body = JSON.parse(body);
-                    return res.status(200).send(body.rows[0].elements[0].duration);
-                });
-            });
+            let body = "";
+            ress.on("data", data => {
+                body += data;
+        });
+            ress.on("end", () => {
+                body = JSON.parse(body);
+            return res.status(200).send(body.rows[0].elements[0].duration);
+        });
+        });
         });
     });
 });
@@ -60,31 +60,45 @@ router.get('/', function (req, res) {
         const https = require("https");
         https.get(url, ress => {
             ress.setEncoding("utf8");
-            let body = "";
-            ress.on("data", data => {
-                body += data;
-            });
-            ress.on("end", () => {
-                body = JSON.parse(body);
+        let body = "";
+        ress.on("data", data => {
+            body += data;
+    });
+        ress.on("end", () => {
+            body = JSON.parse(body);
 
-                if(body.rows[0].elements[0].status == "NOT_FOUND")
-                    res.status(404).send("Invalid address");
-                else{
-                    var lazyOffset = 0;
-                    for(var i = 0; i - lazyOffset < drivers.length; i++){
-                        drivers[i - lazyOffset]._doc.distance = "";
-                        if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7]){
-                            drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
-                        }
-                        else{
-                            drivers.splice(i - lazyOffset, 1);
-                            lazyOffset++;
-                        }
-                    }
-                    res.status(200).send(drivers);
+        if(body.rows[0].elements[0].status == "NOT_FOUND")
+            res.status(404).send("Invalid address");
+        else if(req.rawHeaders[9] == "no-cache") {
+            var lazyOffset = 0;
+            for(var i = 0; i - lazyOffset < drivers.length; i++){
+                drivers[i - lazyOffset]._doc.distance = "";
+                if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7]){
+                    drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
                 }
-            });
-        });
+                else{
+                    drivers.splice(i - lazyOffset, 1);
+                    lazyOffset++;
+                }
+            }
+            res.status(200).send(drivers);
+        }
+        else{
+            var lazyOffset = 0;
+            for(var i = 0; i - lazyOffset < drivers.length; i++){
+                drivers[i - lazyOffset]._doc.distance = "";
+                if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9]){
+                    drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+                }
+                else{
+                    drivers.splice(i - lazyOffset, 1);
+                    lazyOffset++;
+                }
+            }
+            res.status(200).send(drivers);
+        }
+    });
+    });
     });
 });
 
@@ -122,7 +136,7 @@ router.post('/', function (req, res) {
                         }
                         if(hasSentError == false)
                             res.status(200).send(user);
-                });
+                    });
             });
 
     } else {
