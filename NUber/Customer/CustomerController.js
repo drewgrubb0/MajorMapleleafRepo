@@ -152,6 +152,24 @@ router.get('/all', function(req, res){ //used for debugging, shows all customers
     });
 });
 
+router.put('/rate/:id', function (req, res) {
+    if(req.canReview == false)
+        res.status(500).send("Hmmmm....Seems like you can't review");
+
+    Driver.findByIdAndUpdate(req.params.id, function (err, driver) {
+        if(err)
+            return res.status(500).send("There was a problem updating the driver's rating");
+
+        if(req.rawHeaders[1] < 1 || req.rawHeaders > 5)
+            return res.status(500).send("Rating must be between 1 and 5");
+
+        driver.totalCustomers = totalCustomers++;
+        driver.rating = (req.rawHeaders[1] + driver.rating) / driver.totalCustomers;
+
+        return res.status(200).send(driver);
+    });
+});
+
 router.put('/cancel/:id', function(req, res){
     Customer.findByIdAndUpdate(req.params.id, {canReview: true}, function(err, customer) {
         if(err)

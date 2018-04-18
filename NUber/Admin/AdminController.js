@@ -41,7 +41,9 @@ router.post('/', function(req, res) {
                                 name: req.body.name,
                                 currentCustomer: 0,
                                 currentCoords: req.body.currentCoords.replace(/\s+/g, '+'),
-                                classification: req.body.classification
+                                classification: req.body.classification,
+                                totalCustomers: 0,
+                                rating: 0
                             },
                             function (err, driver) {
                                 if (err)
@@ -57,7 +59,9 @@ router.post('/', function(req, res) {
                                 name: req.body.name,
                                 currentCustomer: 0,
                                 currentCoords: req.body.currentCoords.replace(/\s+/g, '+'),
-                                classification: "NUber"
+                                classification: "NUber",
+                                totalCustomers: 0,
+                                rating: 0
                             },
                             function (err, driver) {
                                 if (err)
