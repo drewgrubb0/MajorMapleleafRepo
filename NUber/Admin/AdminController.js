@@ -5,6 +5,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 var Driver = require('../Driver/Driver');
+var Customer = require('../Customer/Customer');
 
 router.post('/', function(req, res) {
     if(req.body.currentCoords)
@@ -83,6 +84,14 @@ router.delete('/:id', function(req, res){
         if(err)
             return res.status(500).send("There was a problem deleting the driver");
         return res.status(200).send("Driver " + driver.name + " was deleted");
+    });
+});
+
+router.get('/Customers', function(req, res){ //used for debugging, shows all customers in database
+    Customer.find({}, function(err, user) {
+        if(err)
+            return res.status(500).send("There was a problem finding customers");
+        return res.status(200).send(user);
     });
 });
 

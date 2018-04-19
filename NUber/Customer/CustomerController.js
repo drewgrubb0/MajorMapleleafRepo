@@ -152,21 +152,30 @@ router.get('/all', function(req, res){ //used for debugging, shows all customers
     });
 });
 
-router.put('/rate/:id', function (req, res) {
-    if(req.canReview == false)
-        res.status(500).send("Hmmmm....Seems like you can't review");
+router.delete('/rate/:id', function (req, res) {
+    if(req.rawHeaders[1] === "no-cache")
+        res.status(500).send("Please input a valid rating");
 
-    Driver.findByIdAndUpdate(req.params.id, function (err, driver) {
+    Customer.findById(req.params.id, function (err, customer) {
         if(err)
-            return res.status(500).send("There was a problem updating the driver's rating");
-
+            return res.status(500).send("There was an error rating your driver");
+        if(!customer.canReview)
+            res.status(500).send("Hmmmm....Seems like you can't review");
         if(req.rawHeaders[1] < 1 || req.rawHeaders > 5)
             return res.status(500).send("Rating must be between 1 and 5");
 
-        driver.totalCustomers = totalCustomers++;
-        driver.rating = (req.rawHeaders[1] + driver.rating) / driver.totalCustomers;
+        Driver.findById(customer.driverID, function (err, driver) {
+            Driver.findByIdAndUpdate(customer.driverID, {totalCustomers: driver.totalCustomers + 1, rating: (parseInt(req.rawHeaders[1]) + driver.rating) / (driver.totalCustomers + 1)}, function (err, driver) {
+                if(err)
+                    return res.status(500).send("There was an error updating the driver");
 
-        return res.status(200).send(driver);
+                Customer.findByIdAndRemove(req.params.id, function(err, user) {
+                    if(err)
+                        return res.status(500).send("There was a problem deleting the customer");
+                    return res.status(200).send("Driver has been rated! Customer " + user.name + " deleted from database.");
+                });
+            });
+        });
     });
 });
 
