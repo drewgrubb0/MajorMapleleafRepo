@@ -63,13 +63,13 @@ router.get('/', function (req, res) {
         let body = "";
         ress.on("data", data => {
             body += data;
-    });
+        });
         ress.on("end", () => {
             body = JSON.parse(body);
 
         if(body.rows[0].elements[0].status == "NOT_FOUND")
             res.status(404).send("Invalid address");
-        else if(req.rawHeaders[9] == "no-cache") {
+        else if(req.rawHeaders[9] == "no-cache") { // not searching for a classification
             var lazyOffset = 0;
             for(var i = 0; i - lazyOffset < drivers.length; i++){
                 drivers[i - lazyOffset]._doc.distance = "";
@@ -83,19 +83,35 @@ router.get('/', function (req, res) {
             }
             res.status(200).send(drivers);
         }
-        else{
-            var lazyOffset = 0;
-            for(var i = 0; i - lazyOffset < drivers.length; i++){
-                drivers[i - lazyOffset]._doc.distance = "";
-                if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9]){
-                    drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+        else{ // searching for a classification
+            if(req.rawHeaders[11] == "no-cache") { // searching for a classification, but no rating
+                var lazyOffset = 0;
+                for(var i = 0; i - lazyOffset < drivers.length; i++){
+                    drivers[i - lazyOffset]._doc.distance = "";
+                    if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9]){
+                        drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+                    }
+                    else{
+                        drivers.splice(i - lazyOffset, 1);
+                        lazyOffset++;
+                    }
                 }
-                else{
-                    drivers.splice(i - lazyOffset, 1);
-                    lazyOffset++;
-                }
+                res.status(200).send(drivers);
             }
-            res.status(200).send(drivers);
+            else { // searching for a classification and rating
+                var lazyOffset = 0;
+                for(var i = 0; i - lazyOffset < drivers.length; i++){
+                    drivers[i - lazyOffset]._doc.distance = "";
+                    if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9] && drivers[i - lazyOffset].rating >= req.rawHeaders[11]){
+                        drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+                    }
+                    else{
+                        drivers.splice(i - lazyOffset, 1);
+                        lazyOffset++;
+                    }
+                }
+                res.status(200).send(drivers);
+            }
         }
     });
     });
