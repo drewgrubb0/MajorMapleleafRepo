@@ -26,15 +26,15 @@ router.get('/:id', function(req, res){
             const https = require("https");
             https.get(url, ress => {
                 ress.setEncoding("utf8");
-                let body = "";
-                ress.on("data", data => {
-                    body += data;
-                });
-                ress.on("end", () => {
-                    body = JSON.parse(body);
-                    return res.status(200).send(body.rows[0].elements[0].duration);
-                });
-            });
+            let body = "";
+            ress.on("data", data => {
+                body += data;
+        });
+            ress.on("end", () => {
+                body = JSON.parse(body);
+            return res.status(200).send(body.rows[0].elements[0].duration);
+        });
+        });
         });
     });
 });
@@ -60,31 +60,61 @@ router.get('/', function (req, res) {
         const https = require("https");
         https.get(url, ress => {
             ress.setEncoding("utf8");
-            let body = "";
-            ress.on("data", data => {
-                body += data;
-            });
-            ress.on("end", () => {
-                body = JSON.parse(body);
-
-                if(body.rows[0].elements[0].status == "NOT_FOUND")
-                    res.status(404).send("Invalid address");
-                else{
-                    var lazyOffset = 0;
-                    for(var i = 0; i - lazyOffset < drivers.length; i++){
-                        drivers[i - lazyOffset]._doc.distance = "";
-                        if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7]){
-                            drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
-                        }
-                        else{
-                            drivers.splice(i - lazyOffset, 1);
-                            lazyOffset++;
-                        }
-                    }
-                    res.status(200).send(drivers);
-                }
-            });
+        let body = "";
+        ress.on("data", data => {
+            body += data;
         });
+        ress.on("end", () => {
+            body = JSON.parse(body);
+
+        if(body.rows[0].elements[0].status == "NOT_FOUND")
+            res.status(404).send("Invalid address");
+        else if(req.rawHeaders[9] == "no-cache") { // not searching for a classification
+            var lazyOffset = 0;
+            for(var i = 0; i - lazyOffset < drivers.length; i++){
+                drivers[i - lazyOffset]._doc.distance = "";
+                if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7]){
+                    drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+                }
+                else{
+                    drivers.splice(i - lazyOffset, 1);
+                    lazyOffset++;
+                }
+            }
+            res.status(200).send(drivers);
+        }
+        else{ // searching for a classification
+            if(req.rawHeaders[11] == "no-cache") { // searching for a classification, but no rating
+                var lazyOffset = 0;
+                for(var i = 0; i - lazyOffset < drivers.length; i++){
+                    drivers[i - lazyOffset]._doc.distance = "";
+                    if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9]){
+                        drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+                    }
+                    else{
+                        drivers.splice(i - lazyOffset, 1);
+                        lazyOffset++;
+                    }
+                }
+                res.status(200).send(drivers);
+            }
+            else { // searching for a classification and rating
+                var lazyOffset = 0;
+                for(var i = 0; i - lazyOffset < drivers.length; i++){
+                    drivers[i - lazyOffset]._doc.distance = "";
+                    if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9] && drivers[i - lazyOffset].rating >= req.rawHeaders[11]){
+                        drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
+                    }
+                    else{
+                        drivers.splice(i - lazyOffset, 1);
+                        lazyOffset++;
+                    }
+                }
+                res.status(200).send(drivers);
+            }
+        }
+    });
+    });
     });
 });
 
@@ -122,7 +152,7 @@ router.post('/', function (req, res) {
                         }
                         if(hasSentError == false)
                             res.status(200).send(user);
-                });
+                    });
             });
 
     } else {
@@ -135,6 +165,33 @@ router.get('/all', function(req, res){ //used for debugging, shows all customers
         if(err)
             return res.status(500).send("There was a problem finding customers");
         return res.status(200).send(user);
+    });
+});
+
+router.delete('/rate/:id', function (req, res) {
+    if(req.rawHeaders[1] === "no-cache")
+        res.status(500).send("Please input a valid rating");
+
+    Customer.findById(req.params.id, function (err, customer) {
+        if(err)
+            return res.status(500).send("There was an error rating your driver");
+        if(!customer.canReview)
+            res.status(500).send("Hmmmm....Seems like you can't review");
+        if(req.rawHeaders[1] < 1 || req.rawHeaders > 5)
+            return res.status(500).send("Rating must be between 1 and 5");
+
+        Driver.findById(customer.driverID, function (err, driver) {
+            Driver.findByIdAndUpdate(customer.driverID, {totalCustomers: driver.totalCustomers + 1, rating: (parseInt(req.rawHeaders[1]) + driver.rating) / (driver.totalCustomers + 1)}, function (err, driver) {
+                if(err)
+                    return res.status(500).send("There was an error updating the driver");
+
+                Customer.findByIdAndRemove(req.params.id, function(err, user) {
+                    if(err)
+                        return res.status(500).send("There was a problem deleting the customer");
+                    return res.status(200).send("Driver has been rated! Customer " + user.name + " deleted from database.");
+                });
+            });
+        });
     });
 });
 

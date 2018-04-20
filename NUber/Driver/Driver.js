@@ -5,7 +5,9 @@ var DriverSchema = new mongoose.Schema({
     name: String,
     currentCustomer: String,
     currentCoords: String,
-    classification: String
+    classification: String,
+    totalCustomers: Number,
+    rating: Number
 });
 mongoose.model('Driver', DriverSchema);
 
