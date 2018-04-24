@@ -175,6 +175,8 @@ router.delete('/rate/:id', function (req, res) {
     Customer.findById(req.params.id, function (err, customer) {
         if(err)
             return res.status(500).send("There was an error rating your driver");
+        if(customer == null)
+            return res.status(400).send("That customer does not exist in our database!");
         if(!customer.canReview)
             res.status(500).send("Hmmmm....Seems like you can't review");
         if(req.rawHeaders[1] < 1 || req.rawHeaders > 5)
@@ -199,6 +201,9 @@ router.put('/cancel/:id', function(req, res){
     Customer.findByIdAndUpdate(req.params.id, {canReview: true}, function(err, customer) {
         if(err)
             return res.status(500).send("There was a problem cancelling your ride :(");
+
+        if(customer == null)
+            return res.status(400).send("That customer does not exist in our database!");
 
         Driver.findByIdAndUpdate(customer.driverID, {availability: false, currentCustomer: "0"}, function (err, driver) {
             if(err)
