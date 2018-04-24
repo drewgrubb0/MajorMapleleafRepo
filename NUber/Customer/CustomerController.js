@@ -218,6 +218,8 @@ router.delete('/:id', function(req, res){
     Customer.findByIdAndRemove(req.params.id, function(err, user) {
         if(err)
             return res.status(500).send("There was a problem deleting the customer");
+        if(user == null)
+            return res.status(400).send("That customer was not found in the database");
         return res.status(200).send("Customer " + user.name + " was deleted");
     });
 });
