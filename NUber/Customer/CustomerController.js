@@ -52,7 +52,11 @@ router.get('/', function (req, res) {
         }
         var driverAdd = driverAdd.split(' ').join('+');
         var urlBeg = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=";
-        var custAddress = req.rawHeaders[5];
+        var custAddress = req.header("address");
+
+        if(custAddress == null)
+            return res.status(400).send("Please enter an address using a header labeled address");
+
         custAddress = custAddress.split(' ').join('+');
         var key = "&key=AIzaSyCL-_lJA8fRyWYnYs-4jq3rBpZweaWvQ-U";
         var url = urlBeg + driverAdd + "&destinations=" + custAddress + key;
@@ -68,51 +72,32 @@ router.get('/', function (req, res) {
             body = JSON.parse(body);
 
         if(body.rows[0].elements[0].status == "NOT_FOUND")
-            res.status(404).send("Invalid address");
-        else if(req.rawHeaders[9] == "no-cache") { // not searching for a classification
+            return res.status(404).send("Invalid address");
+        else
+        {
             var lazyOffset = 0;
-            for(var i = 0; i - lazyOffset < drivers.length; i++){
-                drivers[i - lazyOffset]._doc.distance = "";
-                if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7]){
-                    drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
-                }
-                else{
-                    drivers.splice(i - lazyOffset, 1);
+            for(let i = 0 ; (i - lazyOffset) < drivers.length ; i++)
+            {
+                var currentDriver = drivers[i-lazyOffset];
+                currentDriver._doc.distance = "";
+
+                //Negative test for header to driver matching
+                if(currentDriver.availability == false
+                || (req.header("classification") != null && currentDriver.classification != req.header("classification"))   //If classification is specified but doesnt match
+                || (req.header("rating") != null && currentDriver.rating < req.header("rating"))                            //If rating is specified but doesnt match
+                || (req.header("distance") != null && body.rows[i].elements[0].distance.value > req.header("distance")))    //If distance is specified but doesnt match
+                {
+                    drivers.splice(i-lazyOffset, 1);
                     lazyOffset++;
                 }
-            }
-            res.status(200).send(drivers);
-        }
-        else{ // searching for a classification
-            if(req.rawHeaders[11] == "no-cache") { // searching for a classification, but no rating
-                var lazyOffset = 0;
-                for(var i = 0; i - lazyOffset < drivers.length; i++){
-                    drivers[i - lazyOffset]._doc.distance = "";
-                    if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9]){
-                        drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
-                    }
-                    else{
-                        drivers.splice(i - lazyOffset, 1);
-                        lazyOffset++;
-                    }
+                else //If currentDriver meets the qualifications specified by the header
+                {
+                    drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
                 }
-                res.status(200).send(drivers);
             }
-            else { // searching for a classification and rating
-                var lazyOffset = 0;
-                for(var i = 0; i - lazyOffset < drivers.length; i++){
-                    drivers[i - lazyOffset]._doc.distance = "";
-                    if(drivers[i - lazyOffset].availability && body.rows[i].elements[0].distance.value <= req.rawHeaders[7] && drivers[i - lazyOffset].classification == req.rawHeaders[9] && drivers[i - lazyOffset].rating >= req.rawHeaders[11]){
-                        drivers[i - lazyOffset]._doc.distance = body.rows[i].elements[0].distance.value;
-                    }
-                    else{
-                        drivers.splice(i - lazyOffset, 1);
-                        lazyOffset++;
-                    }
-                }
-                res.status(200).send(drivers);
-            }
+            return res.status(200).send(drivers);
         }
+
     });
     });
     });
@@ -216,10 +201,10 @@ router.put('/cancel/:id', function(req, res){
 
 router.delete('/:id', function(req, res){
     Customer.findByIdAndRemove(req.params.id, function(err, user) {
-        if(err)
-            return res.status(500).send("There was a problem deleting the customer");
         if(user == null)
             return res.status(400).send("That customer was not found in the database");
+        if(err)
+            return res.status(500).send("There was a problem deleting the customer");
         return res.status(200).send("Customer " + user.name + " was deleted");
     });
 });
