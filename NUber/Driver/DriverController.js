@@ -10,15 +10,15 @@ var Customer = require('../Customer/Customer');
 router.get('/:id', function (req, res) {
     Driver.findById(req.params.id, function(err, driver) {
         if(err)
-            return res.status(500).send("There was a problem finding the driver");
+            return res.status(500).send({error: "There was a problem finding the driver"});
         if(driver == null)
-            return res.status(500).send("Driver with given id does not exist");
+            return res.status(404).send({error: "Driver with given id does not exist"});
         if(driver.currentCustomer == "0")
-            return res.status(500).send("No assigned customer");
+            return res.status(400).send({error: "No assigned customer"});
 
         Customer.findById(driver.currentCustomer, function(err, customer) {
             if(err || customer == null)
-                return res.status(500).send("There was a problem finding the customer");
+                return res.status(500).send({error: "There was a problem finding the customer"});
             return res.status(200).send(customer);
         });
     });
@@ -28,8 +28,8 @@ router.put('/:id', function (req, res){
     
     Driver.findByIdAndUpdate(req.params.id, {availability: req.body.availability}, {new: true}, function (err, driver) {
         if(driver == null)
-            return res.status(400).send("That driver does not exist in our database.");
-        if (err) return res.status(500).send("You must either be set as available(true) or unavailable(false).");
+            return res.status(404).send({error: "That driver does not exist in our database."});
+        if (err) return res.status(500).send({error: "You must either be set as available(true) or unavailable(false)."});
         res.status(200).send(driver);
     });
 });
@@ -37,15 +37,15 @@ router.put('/:id', function (req, res){
 router.put('/cancel/:id', function(req, res){
     Driver.findByIdAndUpdate(req.params.id, {availability: false, currentCustomer: "0"}, {new: false}, function(err, driver){
         if(err)
-            return res.status(500).send("There was a problem cancelling your drive");
+            return res.status(500).send({error: "There was a problem cancelling your drive"});
         if(driver == null)
-            return res.status(400).send("The driver you're trying to edit does not exist in our database!");
+            return res.status(400).send({error: "The driver you're trying to edit does not exist in our database!"});
 
         Customer.findByIdAndUpdate(driver.currentCustomer, {canReview: true}, {new: true}, function(err, customer){
            if(err)
-               return res.status(500).send("No ride assigned to cancel");
+               return res.status(500).send({error: "No ride assigned to cancel"});
            else
-               return res.status(200).send("Your drive has been cancelled!");
+               return res.status(200).send({success: "Your drive has been cancelled!"});
         });
 
     });

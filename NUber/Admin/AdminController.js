@@ -30,7 +30,7 @@ router.post('/', function(req, res) {
 
                 if(body.rows[0].elements[0].status != "OK")
                 {
-                    return res.status(404).send("Invalid driver location");
+                    return res.status(404).send({error: "Invalid driver location"});
                 }
                 else if(req.body.car && req.body.name && req.body.currentCoords)
                 {
@@ -48,7 +48,7 @@ router.post('/', function(req, res) {
                             },
                             function (err, driver) {
                                 if (err)
-                                    return res.status(500).send("There was a problem adding a driver to the database");
+                                    return res.status(500).send({error: "There was a problem adding a driver to the database"});
                                 return res.status(200).send(driver);
                             });
                     }
@@ -66,13 +66,13 @@ router.post('/', function(req, res) {
                             },
                             function (err, driver) {
                                 if (err)
-                                    return res.status(500).send("There was a problem adding a driver to the database");
+                                    return res.status(500).send({error: "There was a problem adding a driver to the database"});
                                 return res.status(200).send(driver);
                             });
                     }
 
                 } else {
-                    res.status(400).send("Must input name, car, and currentCoords into body.");
+                    res.status(400).send({error: "Must input name, car, and currentCoords into body."});
                 }
             });
         });
@@ -82,15 +82,15 @@ router.post('/', function(req, res) {
 router.delete('/:id', function(req, res){
     Driver.findByIdAndRemove(req.params.id, function(err, driver) {
         if(err)
-            return res.status(500).send("There was a problem deleting the driver");
-        return res.status(200).send("Driver " + driver.name + " was deleted");
+            return res.status(500).send({error: "There was a problem deleting the driver"});
+        return res.status(200).send({success: "Driver " + driver.name + " was deleted"});
     });
 });
 
 router.get('/Customers', function(req, res){ //used for debugging, shows all customers in database
     Customer.find({}, function(err, user) {
         if(err)
-            return res.status(500).send("There was a problem finding customers");
+            return res.status(500).send({error: "There was a problem finding customers"});
         return res.status(200).send(user);
     });
 });
@@ -98,7 +98,7 @@ router.get('/Customers', function(req, res){ //used for debugging, shows all cus
 router.get('/', function(req, res){
     Driver.find({}, function(err, driver) {
         if(err)
-            return res.status(500).send("There was a problem finding drivers");
+            return res.status(500).send({error: "There was a problem finding drivers"});
         return res.status(200).send(driver);
     });
 });

@@ -9,13 +9,13 @@ var Driver = require('../Driver/Driver');
 
 router.get('/:id', function(req, res){
     Customer.findById(req.params.id, function(err, user) {
-        if(err) return res.status(500).send("There was a problem finding the customer");
-        if(user == null) return res.status(404).send("Customer with given id does not exist");
+        if(err) return res.status(500).send({error: "There was a problem finding the customer"});
+        if(user == null) return res.status(404).send({error: "Customer with given id does not exist"});
 
-        if(user.driverID == 0) return res.status(404).send("Customer does not have  assigned driver");
+        if(user.driverID == 0) return res.status(404).send({error: "Customer does not have  assigned driver"});
         Driver.findById(user.driverID, function (err, driver) {
-            if(err) return res.status(404).send("There was a problem finding the selected driver.");
-            if(driver == null) return res.status(404).send("Driver with given id does not exist");
+            if(err) return res.status(404).send({error: "There was a problem finding the selected driver."});
+            if(driver == null) return res.status(404).send({error: "Driver with given id does not exist"});
 
             var urlBeg = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=";
             var custAddress = driver.currentCoords.split(' ').join('+');;
@@ -41,8 +41,8 @@ router.get('/:id', function(req, res){
 
 router.get('/', function (req, res) {
     Driver.find({}, function (err, drivers) {
-        if (err) return res.status(500).send("There was a problem finding the drivers.");
-        if (drivers.length == 0) return res.status(404).send("No drivers were found");
+        if (err) return res.status(500).send({error: "There was a problem finding the drivers."});
+        if (drivers.length == 0) return res.status(404).send({error: "No drivers were found"});
         var driverAdd = "";
 
         for(var i = 0; i < drivers.length; i++) {
@@ -55,7 +55,7 @@ router.get('/', function (req, res) {
         var custAddress = req.header("address");
 
         if(custAddress == null)
-            return res.status(400).send("Please enter an address using a header labeled address");
+            return res.status(400).send({error: "Please enter an address using a header labeled address"});
 
         custAddress = custAddress.split(' ').join('+');
         var key = "&key=AIzaSyCL-_lJA8fRyWYnYs-4jq3rBpZweaWvQ-U";
@@ -72,7 +72,7 @@ router.get('/', function (req, res) {
             body = JSON.parse(body);
 
         if(body.rows[0].elements[0].status == "NOT_FOUND")
-            return res.status(404).send("Invalid address");
+            return res.status(404).send({error: "Invalid address"});
         else
         {
             var lazyOffset = 0;
@@ -109,12 +109,12 @@ router.post('/', function (req, res) {
         Driver.findById(req.body.driverID, function (err, driver) { //checks to make sure driver exists and is available
             if(err) {
                 hasSentError = true;
-                return res.status(404).send("There was a problem finding the selected driver.");
+                return res.status(500).send({error: "There was a problem finding the selected driver."});
             }
 
             if(driver.availability != true) {
                 hasSentError = true;
-                return res.status(400).send("Selected driver is no longer available");
+                return res.status(400).send({error: "Selected driver is no longer available"});
             }
         });
 
@@ -127,13 +127,13 @@ router.post('/', function (req, res) {
             function (err, user) {
                 if (err) {
                     hasSentError = true;
-                    return res.status(500).send("There was a problem adding the information to the database.");
+                    return res.status(500).send({error: "There was a problem adding the information to the database."});
                 }
                 else
                     Driver.findByIdAndUpdate(req.body.driverID, {availability: false, currentCustomer: user._id}, {new: true}, function (err) { //updates driver
                         if (err && hasSentError == false) {
                             hasSentError = true;
-                            return res.status(501).send("There was a problem updating the selected driver in the database.");
+                            return res.status(501).send({error: "There was a problem updating the selected driver in the database."});
                         }
                         if(hasSentError == false)
                             res.status(200).send(user);
@@ -148,34 +148,34 @@ router.post('/', function (req, res) {
 router.get('/all', function(req, res){ //used for debugging, shows all customers in database
     Customer.find({}, function(err, user) {
         if(err)
-            return res.status(500).send("There was a problem finding customers");
+            return res.status(500).send({error: "There was a problem finding customers"});
         return res.status(200).send(user);
     });
 });
 
 router.delete('/rate/:id', function (req, res) {
     if(req.rawHeaders[1] === "no-cache")
-        res.status(500).send("Please input a valid rating");
+        res.status(400).send({error: "Please input a valid rating"});
 
     Customer.findById(req.params.id, function (err, customer) {
         if(err)
-            return res.status(500).send("There was an error rating your driver");
+            return res.status(500).send({error: "There was an error rating your driver"});
         if(customer == null)
-            return res.status(400).send("That customer does not exist in our database!");
+            return res.status(400).send({error: "That customer does not exist in our database!"});
         if(!customer.canReview)
-            res.status(500).send("Hmmmm....Seems like you can't review");
+            res.status(400).send({error: "Hmmmm....Seems like you can't review"});
         if(req.rawHeaders[1] < 1 || req.rawHeaders > 5)
-            return res.status(500).send("Rating must be between 1 and 5");
+            return res.status(400).send({error: "Rating must be between 1 and 5"});
 
         Driver.findById(customer.driverID, function (err, driver) {
             Driver.findByIdAndUpdate(customer.driverID, {totalCustomers: driver.totalCustomers + 1, rating: (parseInt(req.rawHeaders[1]) + driver.rating) / (driver.totalCustomers + 1)}, function (err, driver) {
                 if(err)
-                    return res.status(500).send("There was an error updating the driver");
+                    return res.status(500).send({error: "There was an error updating the driver"});
 
                 Customer.findByIdAndRemove(req.params.id, function(err, user) {
                     if(err)
-                        return res.status(500).send("There was a problem deleting the customer");
-                    return res.status(200).send("Driver has been rated! Customer " + user.name + " deleted from database.");
+                        return res.status(500).send({error: "There was a problem deleting the customer"});
+                    return res.status(200).send({success: "Driver has been rated! Customer " + user.name + " deleted from database."});
                 });
             });
         });
@@ -185,27 +185,27 @@ router.delete('/rate/:id', function (req, res) {
 router.put('/cancel/:id', function(req, res){
     Customer.findByIdAndUpdate(req.params.id, {canReview: true}, function(err, customer) {
         if(err)
-            return res.status(500).send("There was a problem cancelling your ride :(");
+            return res.status(500).send({error: "There was a problem cancelling your ride :("});
 
         if(customer == null)
-            return res.status(400).send("That customer does not exist in our database!");
+            return res.status(400).send({error: "That customer does not exist in our database!"});
 
         Driver.findByIdAndUpdate(customer.driverID, {availability: false, currentCustomer: "0"}, function (err, driver) {
             if(err)
-                return res.status(500).send("There was a problem updating your driver's availability...");
+                return res.status(500).send({error: "There was a problem updating your driver's availability..."});
         })
 
-        return res.status(200).send("Thank you for using NUber! Be sure to rate your driver!");
+        return res.status(200).send({success: "Thank you for using NUber! Be sure to rate your driver!"});
     });
 });
 
 router.delete('/:id', function(req, res){
     Customer.findByIdAndRemove(req.params.id, function(err, user) {
         if(user == null)
-            return res.status(400).send("That customer was not found in the database");
+            return res.status(400).send({error: "That customer was not found in the database"});
         if(err)
-            return res.status(500).send("There was a problem deleting the customer");
-        return res.status(200).send("Customer " + user.name + " was deleted");
+            return res.status(500).send({error: "There was a problem deleting the customer"});
+        return res.status(200).send({success: "Customer " + user.name + " was deleted"});
     });
 });
 
