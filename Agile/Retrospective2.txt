@@ -1,0 +1,15 @@
+Retrospective 2:
+
+
+
+I thought this sprint was extremely painless.
+From the beginning of the sprint to the last couple days, there was a smooth progression that allowed us to finish everything we needed to in a timely manner.
+
+Our Review and Testing phases improved tremendously from the first sprint. When we met at the beginning of the sprint we laid out rules as to what was considered a successful Review phase and Testing phase, and executed it well. The complexities were also pretty accurate, and I don't think anyone spent too long on any of the stories, or had a difficulty beyond what we assigned them. We commented our stories in great detail, so there were next to no problems with reviewing and debugging.
+
+I'm not really sure what we could have done better this Sprint! I feel like everyone was able to contribute to the project on their own time throughout the last few weeks so we didn't hit any road blocks. Any real problems with time or communication that might have existed aren't really applicable in a true work setting because we won't have several different projects in different groups or classes to work on at the same time.
+
+Overall, I really enjoyed this project and this group in particular. We were extremely productive as individuals without forcing ourselves to meet up constantly. Dustin nailed those user stories so we barely had to clarify or revise them. We all learned what we needed to to make JavaScript work with Node and MongoDB, and nobody had to take on an unfair workload like a lot of us experienced in our last groups.
+
+Easily the best team and most painless project I've had thus far in university.
+Good ~shit boiz~ work team

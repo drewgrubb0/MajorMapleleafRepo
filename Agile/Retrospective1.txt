@@ -1,0 +1,14 @@
+My retrospective:
+
+
+
+I thought this Sprint actually went very well!
+We had a pretty slow start on it, mostly because we it took us a bit to set our first meeting date and learn the basics of JavaScript, but we were still able to get everything done that we needed to.
+
+Our user stories and the Trello system were a very strong part of this Sprint. They were very clearly articulated so very few questions had to be asked. The complexities we had assigned were fairly accurate, and I think the process we used to determine them worked well. Everyone was able to accomplish something and keep the commits consistent.
+
+Although we completed everything and it (probably) works correctly, there is no real system for determining what makes something cleared at review and testing. Right now it is a sort of "have someone else look at it" process, which only works if the second person does not have the same oversight as the first person.
+
+I think this next Sprint will be very successful if we have the same amount of productivity we had in the past couple days for the entire sprint. Some things we can probably do to improve our process:
+- Set up a solid Review process at the next meeting
+- Set up a solid Testing process at the next meeting
