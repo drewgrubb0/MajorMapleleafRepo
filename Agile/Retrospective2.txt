@@ -12,4 +12,4 @@ I'm not really sure what we could have done better this Sprint! I feel like ever
 Overall, I really enjoyed this project and this group in particular. We were extremely productive as individuals without forcing ourselves to meet up constantly. Dustin nailed those user stories so we barely had to clarify or revise them. We all learned what we needed to to make JavaScript work with Node and MongoDB, and nobody had to take on an unfair workload like a lot of us experienced in our last groups.
 
 Easily the best team and most painless project I've had thus far in university.
-Good ~shit boiz~ work team
+Good work team
