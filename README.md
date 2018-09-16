@@ -30,5 +30,6 @@ Link to React application (is not being maintained so could die or be useless de
 - https://nuber-react.herokuapp.com/
 
 ### Check out some of my other stuff!
+- [Portfolio](http://www.drewgrubb.com)
 - [Github](https://github.com/drewgrubb0)
 - [LinkedIn](https://linkedin.com/in/drew-grubb)
